@@ -126,7 +126,7 @@ class Test::Unit::TestCase
       File.open(results_filename, 'w+') do |f| Marshal.dump(response, f) end
     end
     messages = []
-    REXML::XPath.each( REXML::Document.new(response.body).root, "//div[@id='errors']/div/ul/li") do |element|
+    REXML::XPath.each( REXML::Document.new(response.body).root, "//div[@id='errors']//tr[@class='error']") do |element|
       messages << element.to_s.gsub(/<[^>]+>/,' ').gsub(/\n/,' ').gsub(/\s+/, ' ')
     end
     if messages.length > 0
