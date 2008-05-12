@@ -115,3 +115,5 @@ Simon Stapleton for inspiration to add who added support display_invalid_content
 Clifford T. Matthews fix for ruby 1.8.5 and configuration of server endpoints.
 Tomasz Wegrzanowski for replacing class variables with class_inheritable_accessor.
 Cédric Deltheil for ensuring process_with_auto_validate returns the response.
+Nick Plante for fixing css validation.
+

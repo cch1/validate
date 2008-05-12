@@ -120,14 +120,17 @@ class Test::Unit::TestCase
         text_to_multipart('usermedium','all') ]
       
       boundary = '-----------------------------24464570528145'
-      query = params.collect { |p| '--' + boundary + "\r\n" + p }.join('') + boundary + "--\r\n"
+      query = params.collect { |p| '--' + boundary + "\r\n" + p }.join('') + '--' + boundary + "--\r\n"
 
       response = http.start(CSS_VALIDATOR_HOST).post2(CSS_VALIDATOR_PATH,query,"Content-type" => "multipart/form-data; boundary=" + boundary)
       File.open(results_filename, 'w+') do |f| Marshal.dump(response, f) end
     end
     messages = []
-    REXML::XPath.each( REXML::Document.new(response.body).root, "//div[@id='errors']//tr[@class='error']") do |element|
-      messages << element.to_s.gsub(/<[^>]+>/,' ').gsub(/\n/,' ').gsub(/\s+/, ' ')
+    begin
+      REXML::XPath.each( REXML::Document.new(response.body).root, "//x:tr[@class='error']", { "x"=>"http://www.w3.org/1999/xhtml" }) do |element|
+        messages << "Invalid CSS: line" + element.to_s.gsub(/<[^>]+>/,' ').gsub(/\n/,' ').gsub(/\s+/, ' ')
+      end
+    rescue REXML::ParseException
     end
     if messages.length > 0
       message = messages.join("\n")
