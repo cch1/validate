@@ -1,0 +1,19 @@
+body {
+  margin-top: 0px;
+  background-color: #16313e;
+}
+
+a:hover, a:link, a:visited {
+  color: Black;
+}
+
+body #page {
+  margin: auto;
+  width: 950px;
+}
+
+#page #main {
+  width: 100%;
+  height: 100%;
+  background-color: #ceceaa;
+}

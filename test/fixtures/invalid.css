@@ -1,0 +1,8 @@
+// Bad tag
+fnord {
+}
+
+body {
+  // Bad attribute
+  bogosity: 42;
+}
