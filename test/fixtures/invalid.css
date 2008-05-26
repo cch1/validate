@@ -1,8 +1,8 @@
-// Bad tag
-fnord {
+/* Bad tag */
+123fnord {
 }
 
 body {
-  // Bad attribute
+  /* Bad attribute */
   bogosity: 42;
 }
