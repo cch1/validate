@@ -3,6 +3,7 @@ require 'action_mailer/test_case'
 require 'net/http'
 require 'digest'
 require 'ftools'
+require 'ping'
 
 class Validator
   include Singleton
@@ -72,7 +73,14 @@ class Validator
 
   private
   def validity_checks_disabled?
-    ENV["NONET"] == 'true'
+    @disabled ||= (ENV["NONET"] == 'true' || !internet_accessible?)
+  end
+  
+  # Determine if we have Internet access
+  def internet_accessible?
+    returning(Ping.pingecho(MARKUP_VALIDATOR_HOST, 5)) do |available|
+      $stderr << "#{MARKUP_VALIDATOR_HOST} not available.\n" unless available
+    end
   end
 
   def text_to_multipart(key,value)
