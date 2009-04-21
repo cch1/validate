@@ -4,6 +4,7 @@ require 'net/http'
 require 'digest'
 require 'ftools'
 require 'ping'
+require 'xmlsimple'
 
 class Validator
   include Singleton
@@ -26,7 +27,7 @@ class Validator
     base_filename = cache_resource(id, fragment, 'html')
 
     return unless base_filename
-    results_filename = base_filename + '.html' + '.results.yml'
+    results_filename = base_filename + '.html' + '.results.dump'
 
     begin
       response = File.open(results_filename) do |f| Marshal.load(f) end
@@ -45,7 +46,7 @@ class Validator
   def validate_css(css, id)
     return if validity_checks_disabled?
     base_filename = cache_resource(id, css, 'css')
-    results_filename =  base_filename + '.css' + '.results.yml'
+    results_filename =  base_filename + '.css' + '.results.dump'
     begin
       response = File.open(results_filename) do |f| Marshal.load(f) end
     rescue
@@ -100,7 +101,7 @@ class Validator
     file_md5 = File.exists?(filename) ? File.read(filename) : nil 
 
     if file_md5 != resource_md5
-      Dir["#{base_filename}[^.]*"].each {|f| File.delete(f)} # Remove previous results
+      Dir["#{base_filename}\.*"].each {|f| File.delete(f)} # Remove previous results
       File.open(filename, 'w+') do |f| f.write(resource_md5); end # Cache new resource's hash
     end  
     base_filename
