@@ -23,7 +23,7 @@ class Validator
   end
 
   def validate_markup(fragment, id)
-    return if validity_checks_disabled?
+    raise "Validation service disabled" if disabled?
     base_filename = cache_resource(id, fragment, 'html')
 
     return unless base_filename
@@ -44,7 +44,7 @@ class Validator
   end
   
   def validate_css(css, id)
-    return if validity_checks_disabled?
+    raise "Validation service disabled" if disabled?
     base_filename = cache_resource(id, css, 'css')
     results_filename =  base_filename + '.css' + '.results.dump'
     begin
@@ -72,11 +72,11 @@ class Validator
     messages
   end
 
-  private
-  def validity_checks_disabled?
+  def disabled?
     @disabled ||= (ENV["NONET"] == 'true' || !internet_accessible?)
   end
   
+  private
   # Determine if we have Internet access
   def internet_accessible?
     returning(Ping.pingecho(MARKUP_VALIDATOR_HOST, 5)) do |available|
@@ -120,6 +120,7 @@ class ActionMailer::TestCase
   class_inheritable_accessor :display_invalid_content
 
   def assert_valid_markup(fragment)
+    return if Validator.instance.disabled?
     id = self.class.name.gsub(/\:\:/,'/').gsub(/Controllers\//,'') + '.' + method_name
     message = ""
     fragment.split($/).each_with_index{|line, index| message << "#{'%04i' % (index+1)} : #{line}#{$/}"} if display_invalid_content
@@ -171,7 +172,7 @@ class ActionController::TestCase
   #   end
   #
   def assert_valid_markup(fragment = @response.body)
-    type = @response.content_type
+    return if Validator.instance.disabled?
     id = self.class.name.gsub(/\:\:/,'/').gsub(/Controllers\//,'') + '.' + method_name
     message = ""
     fragment.split($/).each_with_index{|line, index| message << "#{'%04i' % (index+1)} : #{line}#{$/}"} if display_invalid_content
@@ -211,6 +212,7 @@ class ActionController::TestCase
   #   end
   #
   def assert_valid_css(css = @response.body)
+    return if Validator.instance.disabled?
     id = self.class.name.gsub(/\:\:/,'/').gsub(/Controllers\//,'') + '.' + method_name
     errors = Validator.instance.validate_css(css, id)
     assert errors.empty?, errors.join("\n")
