@@ -73,13 +73,14 @@ class Validator
   end
 
   def disabled?
-    @disabled ||= (ENV["NONET"] == 'true' || !internet_accessible?)
+    (ENV["NONET"] == 'true') || !internet_accessible?
   end
   
   private
   # Determine if we have Internet access
   def internet_accessible?
-    returning(Ping.pingecho(MARKUP_VALIDATOR_HOST, 5)) do |available|
+    return @service_availability unless @service_availability.nil?
+    @service_availability = returning(Ping.pingecho(MARKUP_VALIDATOR_HOST, 5)) do |available|
       $stderr << "#{MARKUP_VALIDATOR_HOST} not available.\n" unless available
     end
   end
