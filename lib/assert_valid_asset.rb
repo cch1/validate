@@ -38,7 +38,11 @@ class Validator
     markup_is_valid = response['x-w3c-validator-status'] == 'Valid'
     errors = []
     unless markup_is_valid
-      errors << XmlSimple.xml_in(response.body)['messages'][0]['msg'].collect{ |m| "Invalid markup: line #{m['line']}: #{CGI.unescapeHTML(m['content'])}" }
+      begin
+        errors << XmlSimple.xml_in(response.body)['messages'][0]['msg'].collect{ |m| "Invalid markup: line #{m['line']}: #{CGI.unescapeHTML(m['content'])}" }
+      rescue => e
+        errors << "<markup errors present, but not parseable: #{e}>"
+      end
     end
     errors
   end
