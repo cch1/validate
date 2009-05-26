@@ -4,7 +4,8 @@ require 'net/http'
 require 'digest'
 require 'ftools'
 require 'ping'
-require 'xmlsimple'
+require 'rexml/rexml'
+require 'rexml/document'
 
 class Validator
   include Singleton
@@ -39,7 +40,8 @@ class Validator
     errors = []
     unless markup_is_valid
       begin
-        errors << XmlSimple.xml_in(response.body)['messages'][0]['msg'].collect{ |m| "Invalid markup: line #{m['line']}: #{CGI.unescapeHTML(m['content'])}" }
+        # Don't use the REXML #text method of the msg elements because it provokes a nil.record_entity_expansion bug due to a DoS patch.  XmlSimple seems to have a similar bug...
+        errors << REXML::Document.new(response.body).elements['result/messages'].elements.collect('msg'){|m| "Invalid markup: line #{m.attributes['line']}: #{CGI.unescapeHTML(m[0].to_s)}" }
       rescue => e
         errors << "<markup errors present, but not parseable: #{e}>"
       end
