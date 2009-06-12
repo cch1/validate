@@ -116,5 +116,6 @@ Clifford T. Matthews fix for ruby 1.8.5 and configuration of server endpoints.
 Tomasz Wegrzanowski for replacing class variables with class_inheritable_accessor.
 Cédric Deltheil for ensuring process_with_auto_validate returns the response.
 Nick Plante for fixing css validation.
+Chris Hapgood <cch1@hapgoods.com> for dynamic detection of offline mode, Rails 2.3 forward porting and general upkeep
 Michael Reinsch <michael@mobalean.com> for css validation enhancements.
 
