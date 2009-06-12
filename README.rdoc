@@ -105,7 +105,7 @@ i.e. The following will automatically validate content generated in the test_baz
 == Details
 
 License: Released under the MIT license.
-Latest Version: http://www.realityforge.org/svn/public/code/assert-valid-asset/trunk/
+Latest Version: http://github.com/mreinsch/validate/tree/master
 
 == Credits
 
@@ -116,4 +116,5 @@ Clifford T. Matthews fix for ruby 1.8.5 and configuration of server endpoints.
 Tomasz Wegrzanowski for replacing class variables with class_inheritable_accessor.
 Cédric Deltheil for ensuring process_with_auto_validate returns the response.
 Nick Plante for fixing css validation.
+Michael Reinsch <michael@mobalean.com> for css validation enhancements.
 
