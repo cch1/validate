@@ -234,10 +234,19 @@ class ActionController::TestCase
   #     assert_valid_css_files 'layout', 'standard'
   #   end
   #
+  # Alternatively you can use the following to validate all your css files. 
+  # 
+  #   class CssTest < Test::Unit::TestCase
+  #     assert_valid_css_files :all
+  #   end
+  #
   def self.assert_valid_css_files(*files)
+    if files == [:all]
+      files = Dir.glob("#{RAILS_ROOT}/public/stylesheets/*.css").map {|f| File.basename(f, ".css") }
+    end
     files.each do |file|
       filename = "#{RAILS_ROOT}/public/stylesheets/#{file}.css"
-      toeval = "def test_#{file.gsub(/-/,'_')}_valid_css\n"
+      toeval = "def test_#{file.gsub(/[-.]/,'_')}_valid_css\n"
       toeval << "  assert_valid_css(File.open('#{filename}','rb').read)\n"
       toeval << "end\n"
       class_eval toeval
