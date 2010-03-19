@@ -37,16 +37,16 @@ class Validator
       File.open(results_filename, 'w+') do |f| Marshal.dump(response, f) end
     end
     markup_is_valid = response['x-w3c-validator-status'] == 'Valid'
-    errors = []
-    unless markup_is_valid
-      begin
-        # Don't use the REXML #text method of the msg elements because it provokes a nil.record_entity_expansion bug due to a DoS patch.  XmlSimple seems to have a similar bug...
-        errors << REXML::Document.new(response.body).elements['result/messages'].elements.collect('msg'){|m| "Invalid markup: line #{m.attributes['line']}: #{CGI.unescapeHTML(m[0].to_s)}" }
-      rescue => e
-        errors << "<markup errors present, but not parseable: #{e}>"
+    return [] if markup_is_valid
+    begin
+      REXML::Document.new(response.body).root.elements.to_a("//ol[@id='error_loop']/li").collect do |e|
+        text = e.text("span[@class='msg']").chomp
+        position = /Line\s*(\d+).*Column\s*(\d+)/.match(e.text("em"))
+        "Invalid markup @#{sprintf('%04i', position[1])}: #{CGI.unescapeHTML(text)}"
       end
+    rescue => e
+      ["<markup errors present, but not parseable: #{e}>"]
     end
-    errors
   end
   
   def validate_css(css, id)
@@ -178,13 +178,14 @@ class ActionController::TestCase
   #     assert_valid_markup
   #   end
   #
-  def assert_valid_markup(fragment = @response.body)
+  def assert_valid_markup(fragment = @response.body, message = nil)
     return if Validator.instance.disabled?
     id = self.class.name.gsub(/\:\:/,'/').gsub(/Controllers\//,'') + '.' + method_name
-    message = ""
-    fragment.split($/).each_with_index{|line, index| message << "#{'%04i' % (index+1)} : #{line}#{$/}"} if display_invalid_content
+    template = "? markup errors\n?\n#{'-' * 80}\n?"
     errors = Validator.instance.validate_markup(fragment, id)
-    assert errors.empty?, message + errors.join("\n")
+    index = 0
+    content = display_invalid_content ? AssertionMessage.literal(fragment.split($/).map{|line| "#{'%04i' % (index += 1)} : #{line}"}.join($/)) : ""
+    assert_block(build_message(message, template, errors.size, AssertionMessage.literal(errors.join("\n")), content)) { errors.empty? }
   end
 
   # Class-level method to quickly create validation tests for a bunch of actions at once.
