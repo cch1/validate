@@ -13,7 +13,7 @@ class Validator
   MARKUP_VALIDATOR_HOST = ENV['MARKUP_VALIDATOR_HOST'] || 'validator.w3.org'
   MARKUP_VALIDATOR_PATH = ENV['MARKUP_VALIDATOR_PATH'] || '/check'
   CSS_VALIDATOR_HOST = ENV['CSS_VALIDATOR_HOST'] || 'jigsaw.w3.org'
-  CSS_VALIDATOR_PATH = ENV['CSS_VALIDATOR_PATH'] || '/css-validator/validator'  
+  CSS_VALIDATOR_PATH = ENV['CSS_VALIDATOR_PATH'] || '/css-validator/validator'
   CACHE_DIR = File.join(Rails.root, 'tmp', 'validation')
 
   class_inheritable_accessor :display_invalid_content
@@ -48,7 +48,7 @@ class Validator
       ["<markup errors present, but not parseable: #{e}>"]
     end
   end
-  
+
   def validate_css(css, id)
     raise "Validation service disabled" if disabled?
     base_filename = cache_resource(id, css, 'css')
@@ -56,12 +56,12 @@ class Validator
     begin
       response = File.open(results_filename) do |f| Marshal.load(f) end
     rescue
-      params = [ 
+      params = [
         file_to_multipart('file','file.css','text/css',css),
         text_to_multipart('warning','1'),
         text_to_multipart('profile','css2'),
         text_to_multipart('usermedium','all') ]
-      
+
       boundary = '-----------------------------24464570528145'
       query = params.collect { |p| '--' + boundary + "\r\n" + p }.join('') + '--' + boundary + "--\r\n"
 
@@ -79,11 +79,13 @@ class Validator
   end
 
   def disabled?
-    (ENV["NONET"] == 'true') || !internet_accessible?
+    (ENV["NONET"] == 'true') || !internet_accessible? unless (ENV["NONET"] == 'false')
   end
-  
+
   private
-  # Determine if we have Internet access
+  # Determine if we have Internet access.  Note that this check depends on Ping standard library,
+  # which does not use the proper ICMP echo service (which is a privileged operation) but rather a TCP
+  # open of port 7 (echo).
   def internet_accessible?
     return @service_availability unless @service_availability.nil?
     @service_availability = returning(Ping.pingecho(MARKUP_VALIDATOR_HOST, 5)) do |available|
@@ -105,12 +107,12 @@ class Validator
 
     base_filename = File.join(CACHE_DIR, id)
     filename = base_filename + ".#{extension}"
-    file_md5 = File.exists?(filename) ? File.read(filename) : nil 
+    file_md5 = File.exists?(filename) ? File.read(filename) : nil
 
     if file_md5 != resource_md5
       Dir["#{base_filename}\.*"].each {|f| File.delete(f)} # Remove previous results
       File.open(filename, 'w+') do |f| f.write(resource_md5); end # Cache new resource's hash
-    end  
+    end
     base_filename
   end
 
@@ -167,8 +169,8 @@ class ActionController::TestCase
   # Assert that markup (html/xhtml) is valid according the W3C validator web service.
   # By default, it validates the contents of @response.body, which is set after calling
   # one of the get/post/etc helper methods. You can also pass it a string to be validated.
-  # Validation errors, if any, will be included in the output. The input fragment and 
-  # response from the validator service will be cached in the $RAILS_ROOT/tmp directory to 
+  # Validation errors, if any, will be included in the output. The input fragment and
+  # response from the validator service will be cached in the $RAILS_ROOT/tmp directory to
   # minimize network calls.
   #
   # For example, if you have a FooController with an action Bar, put this in foo_controller_test.rb:
@@ -208,9 +210,9 @@ class ActionController::TestCase
   end
 
   # Assert that css is valid according the W3C validator web service.
-  # You pass the css as a string to the method. Validation errors, if any, 
-  # will be included in the output. The input fragment and response from 
-  # the validator service will be cached in the $RAILS_ROOT/tmp directory to 
+  # You pass the css as a string to the method. Validation errors, if any,
+  # will be included in the output. The input fragment and response from
+  # the validator service will be cached in the $RAILS_ROOT/tmp directory to
   # minimize network calls.
   #
   # For example, if you have a css file standard.css you can add the following test;
@@ -226,7 +228,7 @@ class ActionController::TestCase
     assert errors.empty?, errors.join("\n")
   end
 
-  # Class-level method to quickly create validation tests for a bunch of css files relative to 
+  # Class-level method to quickly create validation tests for a bunch of css files relative to
   # $RAILS_ROOT/public/stylesheets and ending in '.css'.
   #
   # The following example validates layout.css and standard.css in the standard directory ($RAILS_ROOT/public/stylesheets);
@@ -235,8 +237,8 @@ class ActionController::TestCase
   #     assert_valid_css_files 'layout', 'standard'
   #   end
   #
-  # Alternatively you can use the following to validate all your css files. 
-  # 
+  # Alternatively you can use the following to validate all your css files.
+  #
   #   class CssTest < Test::Unit::TestCase
   #     assert_valid_css_files :all
   #   end
