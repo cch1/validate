@@ -14,6 +14,7 @@ class Validator
   MARKUP_VALIDATOR_PATH = ENV['MARKUP_VALIDATOR_PATH'] || '/check'
   CSS_VALIDATOR_HOST = ENV['CSS_VALIDATOR_HOST'] || 'jigsaw.w3.org'
   CSS_VALIDATOR_PATH = ENV['CSS_VALIDATOR_PATH'] || '/css-validator/validator'
+  CSS_VALIDATOR_OPTIONS = {'warning' => '1', 'profile' => 'css2', 'usermedium' => 'all'}
   CACHE_DIR = File.join(Rails.root, 'tmp', 'validation')
 
   class_inheritable_accessor :display_invalid_content
@@ -56,12 +57,8 @@ class Validator
     begin
       response = File.open(results_filename) do |f| Marshal.load(f) end
     rescue
-      params = [
-        file_to_multipart('file','file.css','text/css',css),
-        text_to_multipart('warning','1'),
-        text_to_multipart('profile','css2'),
-        text_to_multipart('usermedium','all') ]
-
+      params = CSS_VALIDATOR_OPTIONS.map{|(k,v)| text_to_multipart(k, v)}
+      params << file_to_multipart('file','file.css','text/css',css)
       boundary = '-----------------------------24464570528145'
       query = params.collect { |p| '--' + boundary + "\r\n" + p }.join('') + '--' + boundary + "--\r\n"
 
