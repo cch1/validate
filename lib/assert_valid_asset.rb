@@ -35,7 +35,12 @@ class Validator
       response = File.open(results_filename) do |f| Marshal.load(f) end
     rescue
       response = http.start(MARKUP_VALIDATOR_HOST).post2(MARKUP_VALIDATOR_PATH, "fragment=#{CGI.escape(fragment)}&output=xml")
-      File.open(results_filename, 'w+') { |f| Marshal.dump(response, f) } if Net::HTTPSuccess === response
+      if Net::HTTPSuccess === response
+        File.open(results_filename, 'w+') { |f| Marshal.dump(response, f) }
+      else
+        $stderr << "#{MARKUP_VALIDATOR_HOST} provided an invalid resposne (#{response}).\n"
+        return [] # Nothing learned.
+      end
     end
     markup_is_valid = response['x-w3c-validator-status'] == 'Valid'
     return [] if markup_is_valid
@@ -63,7 +68,12 @@ class Validator
       query = params.collect { |p| '--' + boundary + "\r\n" + p }.join('') + '--' + boundary + "--\r\n"
 
       response = http.start(CSS_VALIDATOR_HOST).post2(CSS_VALIDATOR_PATH,query,"Content-type" => "multipart/form-data; boundary=" + boundary)
-      File.open(results_filename, 'w+') { |f| Marshal.dump(response, f) } if Net::HTTPSuccess === response
+      if Net::HTTPSuccess === response
+        File.open(results_filename, 'w+') { |f| Marshal.dump(response, f) }
+      else
+        $stderr << "#{CSS_VALIDATOR_HOST} provided an invalid resposne (#{response}).\n"
+        return [] # Nothing learned.
+      end
     end
     messages = []
     begin
