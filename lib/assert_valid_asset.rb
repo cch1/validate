@@ -42,7 +42,7 @@ class Validator
     begin
       REXML::Document.new(response.body).root.elements.to_a("//ol[@id='error_loop']/li").collect do |e|
         text = e.text("span[@class='msg']").chomp
-        position = /Line\s*(\d+).*Column\s*(\d+)/.match(e.text("em"))
+        position = /Line\s*(\d+).*Column\s*(\d+)/m.match(e.text("em"))
         "Invalid markup @#{sprintf('%04i', position[1])}: #{CGI.unescapeHTML(text)}"
       end
     rescue => e
