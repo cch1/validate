@@ -38,7 +38,7 @@ class Validator
       if Net::HTTPSuccess === response
         File.open(results_filename, 'w+') { |f| Marshal.dump(response, f) }
       else
-        $stderr << "#{MARKUP_VALIDATOR_HOST} provided an invalid resposne (#{response}).\n"
+        $stderr << "#{MARKUP_VALIDATOR_HOST} provided an invalid response (#{response}).\n"
         return [] # Nothing learned.
       end
     end
@@ -71,7 +71,7 @@ class Validator
       if Net::HTTPSuccess === response
         File.open(results_filename, 'w+') { |f| Marshal.dump(response, f) }
       else
-        $stderr << "#{CSS_VALIDATOR_HOST} provided an invalid resposne (#{response}).\n"
+        $stderr << "#{CSS_VALIDATOR_HOST} provided an invalid response (#{response}).\n"
         return [] # Nothing learned.
       end
     end
