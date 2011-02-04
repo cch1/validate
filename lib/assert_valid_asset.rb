@@ -95,7 +95,7 @@ class Validator
   # open of port 7 (echo).
   def internet_accessible?
     return @service_availability unless @service_availability.nil?
-    @service_availability = returning(Ping.pingecho(MARKUP_VALIDATOR_HOST, 5)) do |available|
+    @service_availability = Ping.pingecho(MARKUP_VALIDATOR_HOST, 5).tap do |available|
       $stderr << "#{MARKUP_VALIDATOR_HOST} not available.\n" unless available
     end
   end
